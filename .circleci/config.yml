@@ -19,8 +19,28 @@ jobs:
       - sbom-transmitter/transmit: 
           sbom-file-path: python-example-sbom.json
 
+  sbom-cdxgen:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          command: sudo npm install -g @cyclonedx/cdxgen
+          name: Install dependencies
+      - run:
+          command: cdxgen .  -o ./bom.json --deep --type python --resolve-class --recurse
+          name: Create SBOM
+      - run: 
+          command: cat ./bom.json
+          name: Install dependencies
+      - sbom-transmitter/transmit: 
+          sbom-file-path: ./bom.json
+          
 workflows:
   sbom:
     jobs:
       - sbom:
+          filters: *filters
+      - sbom-cdxgen:
           filters: *filters
