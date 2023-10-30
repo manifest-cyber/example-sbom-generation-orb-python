@@ -25,7 +25,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: npm install -g @cyclonedx/cdxgen
+          command: sudo npm install -g @cyclonedx/cdxgen
           name: Install dependencies
       - run:
           command: cdxgen .  -o ./bom.json --deep --type python --resolve-class --recurse --spec-version 1.4
