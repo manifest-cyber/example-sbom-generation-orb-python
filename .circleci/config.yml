@@ -15,7 +15,7 @@ jobs:
       - checkout
       - sbom-transmitter/install-syft
       - sbom-transmitter/run-syft:
-          purl: ./
+          source: ./
           file: python-example-sbom.json
       - sbom-transmitter/transmit: 
           sbom-file-path: python-example-sbom.json
@@ -28,7 +28,7 @@ jobs:
           command: sudo npm install -g @cyclonedx/cdxgen
           name: Install dependencies
       - run:
-          command: cdxgen .  -o ./bom.json --deep --type python --resolve-class --recurse
+          command: cdxgen .  -o ./bom.json --deep --type python --resolve-class --recurse --spec-version 1.4
           name: Create SBOM
       - run: 
           command: cat ./bom.json
