@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  sbom-transmitter: manifest/sbom-transmitter@0.2.6
+  sbom: manifest/sbom@0.0.3
   node: circleci/node@5.1.0
 
 filters: &filters
@@ -8,38 +8,35 @@ filters: &filters
     only: /.*/
 
 jobs:
-  sbom:
+  sbom-syft:
     docker:
       - image: cimg/base:current
     steps:
       - checkout
-      - sbom-transmitter/install-syft
-      - sbom-transmitter/run-syft:
-          source: ./
-          file: python-example-sbom.json
-      - sbom-transmitter/transmit: 
-          sbom-file-path: python-example-sbom.json
-
+      - sbom/install:
+          version: v0.10.0
+      - sbom/generate:
+          format: spdx-json
+          source: .
   sbom-cdxgen:
     executor: node/default
     steps:
       - checkout
-      - run:
-          command: sudo npm install -g @cyclonedx/cdxgen
-          name: Install dependencies
-      - run:
-          command: cdxgen .  -o ./bom.json --deep --type python --resolve-class --recurse --spec-version 1.4
-          name: Create SBOM
-      - run: 
-          command: cat ./bom.json
-          name: View SBOM
-      - sbom-transmitter/transmit: 
-          sbom-file-path: ./bom.json
-          
+      - sbom/install:
+          generator: cdxgen
+          version: v0.10.0
+      - sbom/generate:
+          args: "--spec-version 1.4"
+          format: cyclonedx-json
+          generator: cdxgen
+          output: bom.json
+          source: .
+          source_name: node
+          source_version: 14.17.0
 workflows:
   sbom:
     jobs:
-      - sbom:
+      - sbom-syft:
           filters: *filters
       - sbom-cdxgen:
           filters: *filters
